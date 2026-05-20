@@ -6,6 +6,7 @@
 #include <windows.h>
 
 #define BUFFER_SIZE (64 * 1024)
+#define HASH_SIZE 64
 
 const uint64_t GOLDEN_RATIO = 0x9e3779b97f4a7c15ULL;
 
@@ -33,21 +34,21 @@ char* convert_encoding(const char* input, UINT from_cp, UINT to_cp) {
     return result;
 }
 
-char* get_hash(const char* filepath, char* hash_str, int hash_size) {
-    if (!hash_str || hash_size < 2) {
-        return 0;
+char* get_hash(const char* filepath, char* hash_str) {
+    if (!hash_str) {
+        return NULL;
     }
 
     char* converted_path = convert_encoding(filepath, 866, 1251);
     if (!converted_path) {
         printf("Ошибка конвертации пути\n");
-        return 0;
+        return NULL;
     }
 
     FILE* file = fopen(converted_path, "rb");
     if (file == NULL) {
-        printf("Ошибка открытия файла %s\n", filepath);
-        return 0;
+        printf("Ошибка открытия файла \"%s\" (Убедитесь, что файл по указанному пути существует)\n", filepath);
+        return NULL;
     }
     free(converted_path);
 
@@ -67,7 +68,7 @@ char* get_hash(const char* filepath, char* hash_str, int hash_size) {
         for (int i = 0; i < bytes_read; i++) {
             hash ^= buffer[i];
             hash *= GOLDEN_RATIO;
-            hash ^= (hash << 7);
+            hash ^= (hash << 5);
             hash += length;
         }
         length += bytes_read;
@@ -79,25 +80,55 @@ char* get_hash(const char* filepath, char* hash_str, int hash_size) {
     free(buffer);
     fclose(file);
 
-    snprintf(hash_str, hash_size, "%016llX", hash);
-    hash_str[hash_size - 1] = '\0';
+    snprintf(hash_str, HASH_SIZE, "%016llX", hash);
+    hash_str[HASH_SIZE - 1] = '\0';
     return hash_str;
 }
 
 void hash_menu() {
     char filepath[512];
-    char hash[64];
+    char hash[HASH_SIZE];
 
     printf_s("Подсчет хеша файла...\n");
     printf_s("Введите абсолютный путь файла: ");
     fgets(filepath, sizeof(filepath), stdin);
     filepath[strcspn(filepath, "\n")] = 0;
 
-    printf_s("Полученный хеш %s", get_hash(filepath, hash, sizeof(hash)));
+    printf_s("Полученный хеш: %s\n", get_hash(filepath, hash));
 }
 
 void comparison_menu() {
-    printf_s("Сравнение файла...");
+    printf_s("Сравнение файла...\n");
+    char hash1[HASH_SIZE];
+    char hash2[HASH_SIZE];
+    char filepath[512];
+
+    printf_s("Введите абсолютный путь к первому файлу: ");
+    fgets(filepath, sizeof(filepath), stdin);
+    filepath[strcspn(filepath, "\n")] = 0;
+    char* result = get_hash(filepath, hash1);
+    if (result == NULL) {
+        printf_s("Ошибка просчета хеша. Завершение действия...\n");
+        return;
+    }
+
+    printf_s("Введите абсолютный путь ко второму файлу: ");
+    fgets(filepath, sizeof(filepath), stdin);
+    filepath[strcspn(filepath, "\n")] = 0;
+    result = get_hash(filepath, hash2);
+    if (result == NULL) {
+        printf_s("Ошибка просчета хеша. Завершение действия...\n");
+        return;
+    }
+
+    if (strcmp(hash1, hash2) == 0) {
+        printf_s("Файлы одинаковые (Хеш = %s).\n", hash1);
+    }
+    else {
+        printf_s("Файлы разные.\n");
+        printf_s("Хеш первого файла: %s\n", hash1);
+        printf_s("Хеш второго файла: %s\n", hash2);
+    }
 }
 
 int main()
