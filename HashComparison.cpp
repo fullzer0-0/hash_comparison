@@ -5,11 +5,15 @@
 #include <locale.h>
 #include <windows.h>
 
-#define BUFFER_SIZE (64 * 1024)
-#define HASH_SIZE 64
 
-const uint64_t GOLDEN_RATIO = 0x9e3779b97f4a7c15ULL;
+#define BUFFER_SIZE (64 * 1024) // размер буффера (64 кб)
+#define HASH_SIZE 64 // размер хеша
 
+// Множитель для хеш функции: Золотое сечение в 64 битах
+const uint64_t GOLDEN_RATIO = 0x9e3779b97f4a7c15ULL; 
+
+// Функция конвертации кодировки. Необходима для указания пути файла с кириллицой
+// Полностью взята с интернета
 char* convert_encoding(const char* input, UINT from_cp, UINT to_cp) {
     int wide_size = MultiByteToWideChar(from_cp, 0, input, -1, NULL, 0);
     if (wide_size == 0) return NULL;
@@ -33,6 +37,13 @@ char* convert_encoding(const char* input, UINT from_cp, UINT to_cp) {
     free(wide_str);
     return result;
 }
+
+/*
+* Хеш функция
+* @param filepath   путь к файлу
+* @param hash_str   хеш массив
+* @return           хеш строка в 16ричном формате (NULL - если ошибка)
+*/
 
 char* get_hash(const char* filepath, char* hash_str) {
     if (!hash_str) {
@@ -85,6 +96,7 @@ char* get_hash(const char* filepath, char* hash_str) {
     return hash_str;
 }
 
+// Меню вывода хеша файла
 void hash_menu() {
     char filepath[512];
     char hash[HASH_SIZE];
@@ -97,8 +109,9 @@ void hash_menu() {
     printf_s("Полученный хеш: %s\n", get_hash(filepath, hash));
 }
 
+// Меню сравнения файлов
 void comparison_menu() {
-    printf_s("Сравнение файла...\n");
+    printf_s("Сравнение файлов...\n");
     char hash1[HASH_SIZE];
     char hash2[HASH_SIZE];
     char filepath[512];
@@ -130,6 +143,7 @@ void comparison_menu() {
         printf_s("Хеш второго файла: %s\n", hash2);
     }
 }
+
 
 int main()
 {
