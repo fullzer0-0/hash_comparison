@@ -1,10 +1,13 @@
 ﻿#define _CRT_SECURE_NO_WARNINGS
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <locale.h>
 #include <windows.h>
 
 #define BUFFER_SIZE (64 * 1024)
+
+const uint64_t GOLDEN_RATIO = 0x9e3779b97f4a7c15ULL;
 
 char* convert_encoding(const char* input, UINT from_cp, UINT to_cp) {
     int wide_size = MultiByteToWideChar(from_cp, 0, input, -1, NULL, 0);
@@ -30,49 +33,60 @@ char* convert_encoding(const char* input, UINT from_cp, UINT to_cp) {
     return result;
 }
 
-char* get_hash(const char* filepath, char* hash, int hash_size) {
-    if (!hash || hash_size < 2) {
-        return NULL;
+char* get_hash(const char* filepath, char* hash_str, int hash_size) {
+    if (!hash_str || hash_size < 2) {
+        return 0;
     }
 
     char* converted_path = convert_encoding(filepath, 866, 1251);
     if (!converted_path) {
         printf("Ошибка конвертации пути\n");
-        return NULL;
+        return 0;
     }
 
     FILE* file = fopen(converted_path, "rb");
     if (file == NULL) {
         printf("Ошибка открытия файла %s\n", filepath);
-        return NULL;
+        return 0;
     }
+    free(converted_path);
 
-    int hash_int = 0;
-    char* buffer = (char*)malloc(BUFFER_SIZE*sizeof(char));
+
+    uint64_t hash = GOLDEN_RATIO;
+    uint64_t length = 0;
+
+    char* buffer = (char*)malloc(BUFFER_SIZE);
     if (buffer == NULL) {
         printf("Ошибка выделения памяти для буфера\n");
         fclose(file);
         return NULL;
     }
-    size_t bytes_read;
 
+    size_t bytes_read;
     while ((bytes_read = fread(buffer, 1, BUFFER_SIZE, file)) > 0) {
-        for (size_t i = 0; i < bytes_read; i++) {
-            hash_int ^= buffer[i];
+        for (int i = 0; i < bytes_read; i++) {
+            hash ^= buffer[i];
+            hash *= GOLDEN_RATIO;
+            hash ^= (hash << 7);
+            hash += length;
         }
-        printf_s("%zu\n", bytes_read);
+        length += bytes_read;
     }
+
+    hash ^= length;
+    hash ^= (length << 32);
 
     free(buffer);
     fclose(file);
 
-    snprintf(hash, hash_size, "%d", hash_int);
-    return hash;
+    snprintf(hash_str, hash_size, "%016llX", hash);
+    hash_str[hash_size - 1] = '\0';
+    return hash_str;
 }
 
 void hash_menu() {
     char filepath[512];
-    char hash[32];
+    char hash[64];
 
     printf_s("Подсчет хеша файла...\n");
     printf_s("Введите абсолютный путь файла: ");
