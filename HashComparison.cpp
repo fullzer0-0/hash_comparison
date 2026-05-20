@@ -6,12 +6,42 @@
 
 #define BUFFER_SIZE (64 * 1024)
 
+char* convert_encoding(const char* input, UINT from_cp, UINT to_cp) {
+    int wide_size = MultiByteToWideChar(from_cp, 0, input, -1, NULL, 0);
+    if (wide_size == 0) return NULL;
+
+    wchar_t* wide_str = (wchar_t*)malloc(wide_size * sizeof(wchar_t));
+    if (!wide_str) return NULL;
+
+    MultiByteToWideChar(from_cp, 0, input, -1, wide_str, wide_size);
+
+    int result_size = WideCharToMultiByte(to_cp, 0, wide_str, -1, NULL, 0, NULL, NULL);
+    if (result_size == 0) {
+        free(wide_str);
+        return NULL;
+    }
+
+    char* result = (char*)malloc(result_size);
+    if (result) {
+        WideCharToMultiByte(to_cp, 0, wide_str, -1, result, result_size, NULL, NULL);
+    }
+
+    free(wide_str);
+    return result;
+}
+
 char* get_hash(const char* filepath, char* hash, int hash_size) {
     if (!hash || hash_size < 2) {
         return NULL;
     }
 
-    FILE* file = fopen(filepath, "rb");
+    char* converted_path = convert_encoding(filepath, 866, 1251);
+    if (!converted_path) {
+        printf("Ошибка конвертации пути\n");
+        return NULL;
+    }
+
+    FILE* file = fopen(converted_path, "rb");
     if (file == NULL) {
         printf("Ошибка открытия файла %s\n", filepath);
         return NULL;
@@ -67,9 +97,9 @@ int main()
 
     while (1) {
         printf_s("Меню:\n");
-        printf_s("1) Вычислить хеш файла:\n");
-        printf_s("2) Сравнить файлы:\n");
-        printf_s("0) Выход:\n");
+        printf_s("1) Вычислить хеш файла\n");
+        printf_s("2) Сравнить файлы\n");
+        printf_s("0) Выход\n");
         printf_s("Выберите действие: ");
         scanf_s("%c", &command, 1);
         while (getchar() != '\n');
