@@ -7,7 +7,7 @@
 
 
 #define BUFFER_SIZE (64 * 1024) // размер буффера (64 кб)
-#define HASH_SIZE 64 // размер хеша
+#define HASH_SIZE 17 // размер хеша
 
 // Множитель для хеш функции: Золотое сечение в 64 битах
 const uint64_t GOLDEN_RATIO = 0x9e3779b97f4a7c15ULL; 
@@ -74,6 +74,7 @@ char* get_hash(const char* filepath, char* hash_str) {
         return NULL;
     }
 
+    printf_s("Расчет хеша файла \"%s\"...\n", filepath);
     size_t bytes_read;
     while ((bytes_read = fread(buffer, 1, BUFFER_SIZE, file)) > 0) {
         for (int i = 0; i < bytes_read; i++) {
@@ -114,21 +115,24 @@ void comparison_menu() {
     printf_s("Сравнение файлов...\n");
     char hash1[HASH_SIZE];
     char hash2[HASH_SIZE];
-    char filepath[512];
+    char filepath1[512];
+    char filepath2[512];
 
     printf_s("Введите абсолютный путь к первому файлу: ");
-    fgets(filepath, sizeof(filepath), stdin);
-    filepath[strcspn(filepath, "\n")] = 0;
-    char* result = get_hash(filepath, hash1);
+    fgets(filepath1, sizeof(filepath1), stdin);
+    filepath1[strcspn(filepath1, "\n")] = 0;
+
+    printf_s("Введите абсолютный путь ко второму файлу: ");
+    fgets(filepath2, sizeof(filepath2), stdin);
+    filepath2[strcspn(filepath2, "\n")] = 0;
+
+    char* result = get_hash(filepath1, hash1);
     if (result == NULL) {
         printf_s("Ошибка просчета хеша. Завершение действия...\n");
         return;
     }
 
-    printf_s("Введите абсолютный путь ко второму файлу: ");
-    fgets(filepath, sizeof(filepath), stdin);
-    filepath[strcspn(filepath, "\n")] = 0;
-    result = get_hash(filepath, hash2);
+    result = get_hash(filepath2, hash2);
     if (result == NULL) {
         printf_s("Ошибка просчета хеша. Завершение действия...\n");
         return;
