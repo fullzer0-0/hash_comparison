@@ -1,0 +1,26 @@
+name: Build C++ Console App
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v2
+    
+    - name: Restore NuGet packages
+      run: nuget restore HashComparison.sln
+      working-directory: ./
+    
+    - name: Build solution
+      run: msbuild HashComparison.sln /p:Configuration=Release /p:Platform=x64
+      working-directory: ./
+    
+    - name: Run executable
+      run: ./x64/Release/HashComparison.exe
+      working-directory: ./
+      continue-on-error: true
