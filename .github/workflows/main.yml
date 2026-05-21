@@ -1,26 +1,52 @@
 name: Build C++ Console App
 
-on: [push, pull_request]
+on:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   build:
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
     
-    - name: Add MSBuild to PATH
+    - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
     
-    - name: Restore NuGet packages
-      run: nuget restore HashComparison.sln
-      working-directory: ./
-    
-    - name: Build solution
+    - name: Build project
       run: msbuild HashComparison.sln /p:Configuration=Release /p:Platform=x64
-      working-directory: ./
     
-    - name: Run executable
-      run: ./x64/Release/HashComparison.exe
-      working-directory: ./
-      continue-on-error: true
+    - name: Upload executable
+      uses: actions/upload-artifact@v4
+      with:
+        name: HashComparison
+        path: x64/Release/HashComparison.exe
+
+  release:
+    needs: build
+    runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - name: Download executable
+      uses: actions/download-artifact@v4
+      with:
+        name: HashComparison
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: HashComparison.exe
+        name: Release ${{ github.ref_name }}
+        body: |
+          ## HashComparison ${{ github.ref_name }}    
+          ### Как использовать:
+          1. Скачайте HashComparison.exe
+          2. Запустите HashComparison.exe
+          3. Следуйте инструкциям в меню
+          
+          ### Системные требования:
+          - Windows 10 или новее
