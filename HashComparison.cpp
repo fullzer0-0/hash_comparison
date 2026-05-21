@@ -151,8 +151,9 @@ void comparison_menu() {
 
 int main()
 {
-    SetConsoleOutputCP(1251);
-    setlocale(LC_ALL, "Russian");
+    SetConsoleOutputCP(65001);
+    SetConsoleCP(65001);
+    setlocale(LC_ALL, "ru_RU.UTF-8");
     
     printf_s("Приветствую!\n");
 
