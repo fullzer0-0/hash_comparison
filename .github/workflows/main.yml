@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
@@ -50,3 +53,5 @@ jobs:
           
           ### Системные требования:
           - Windows 10 или новее
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
