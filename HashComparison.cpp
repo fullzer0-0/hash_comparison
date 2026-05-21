@@ -153,7 +153,9 @@ int main()
 {
     SetConsoleOutputCP(65001);
     SetConsoleCP(65001);
-    setlocale(LC_ALL, "ru_RU.UTF-8");
+    setlocale(LC_ALL, ".UTF-8");
+    
+    system("chcp 65001 > nul");
     
     printf_s("Приветствую!\n");
 
