@@ -151,11 +151,11 @@ void comparison_menu() {
 
 int main()
 {
-    SetConsoleOutputCP(65001);
-    SetConsoleCP(65001);
-    setlocale(LC_ALL, ".UTF-8");
+    //SetConsoleOutputCP(65001);
+    //SetConsoleCP(65001);
+    setlocale(LC_ALL, "");
     
-    system("chcp 65001 > nul");
+    system("chcp 1251 > nul");
     
     printf_s("Приветствую!\n");
 
