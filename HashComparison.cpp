@@ -50,7 +50,7 @@ char* get_hash(const char* filepath, char* hash_str) {
         return NULL;
     }
 
-    char* converted_path = convert_encoding(filepath, 866, 1251);
+    char* converted_path = convert_encoding(filepath, 65001, 1251);
     if (!converted_path) {
         printf("Error: Failed to convert path\n");
         return NULL;
