@@ -52,13 +52,13 @@ char* get_hash(const char* filepath, char* hash_str) {
 
     char* converted_path = convert_encoding(filepath, 866, 1251);
     if (!converted_path) {
-        printf("Ошибка конвертации пути\n");
+        printf("Error: Failed to convert path\n");
         return NULL;
     }
 
     FILE* file = fopen(converted_path, "rb");
     if (file == NULL) {
-        printf("Ошибка открытия файла \"%s\" (Убедитесь, что файл по указанному пути существует)\n", filepath);
+        printf("Error: Cannot open file \"%s\" (Make sure the file exists at the specified path)\n", filepath);
         return NULL;
     }
     free(converted_path);
@@ -69,12 +69,12 @@ char* get_hash(const char* filepath, char* hash_str) {
 
     char* buffer = (char*)malloc(BUFFER_SIZE);
     if (buffer == NULL) {
-        printf("Ошибка выделения памяти для буфера\n");
+        printf("Error: Memory allocation failed for buffer\n");
         fclose(file);
         return NULL;
     }
 
-    printf_s("Расчет хеша файла \"%s\"...\n", filepath);
+    printf_s("Calculating hash of file \"%s\"...\n", filepath);
     size_t bytes_read;
     while ((bytes_read = fread(buffer, 1, BUFFER_SIZE, file)) > 0) {
         for (int i = 0; i < bytes_read; i++) {
@@ -102,71 +102,74 @@ void hash_menu() {
     char filepath[512];
     char hash[HASH_SIZE];
 
-    printf_s("Подсчет хеша файла...\n");
-    printf_s("Введите абсолютный путь файла: ");
+    printf_s("Calculate file hash...\n");
+    printf_s("Enter absolute file path: ");
     fgets(filepath, sizeof(filepath), stdin);
     filepath[strcspn(filepath, "\n")] = 0;
 
-    printf_s("Полученный хеш: %s\n", get_hash(filepath, hash));
+    char* result = get_hash(filepath, hash);
+    if (result != NULL) {
+        printf_s("Hash: %s\n", result);
+    } else {
+        printf_s("Failed to calculate hash\n");
+    }
 }
 
 // Меню сравнения файлов
 void comparison_menu() {
-    printf_s("Сравнение файлов...\n");
+    printf_s("Compare files...\n");
     char hash1[HASH_SIZE];
     char hash2[HASH_SIZE];
     char filepath1[512];
     char filepath2[512];
 
-    printf_s("Введите абсолютный путь к первому файлу: ");
+    printf_s("Enter absolute path to first file: ");
     fgets(filepath1, sizeof(filepath1), stdin);
     filepath1[strcspn(filepath1, "\n")] = 0;
 
-    printf_s("Введите абсолютный путь ко второму файлу: ");
+    printf_s("Enter absolute path to second file: ");
     fgets(filepath2, sizeof(filepath2), stdin);
     filepath2[strcspn(filepath2, "\n")] = 0;
 
     char* result = get_hash(filepath1, hash1);
     if (result == NULL) {
-        printf_s("Ошибка просчета хеша. Завершение действия...\n");
+        printf_s("Error: Failed to calculate hash. Aborting...\n");
         return;
     }
 
     result = get_hash(filepath2, hash2);
     if (result == NULL) {
-        printf_s("Ошибка просчета хеша. Завершение действия...\n");
+        printf_s("Error: Failed to calculate hash. Aborting...\n");
         return;
     }
 
     if (strcmp(hash1, hash2) == 0) {
-        printf_s("Файлы одинаковые (Хеш = %s).\n", hash1);
+        printf_s("Files are identical (Hash = %s).\n", hash1);
     }
     else {
-        printf_s("Файлы разные.\n");
-        printf_s("Хеш первого файла: %s\n", hash1);
-        printf_s("Хеш второго файла: %s\n", hash2);
+        printf_s("Files are different.\n");
+        printf_s("Hash of first file: %s\n", hash1);
+        printf_s("Hash of second file: %s\n", hash2);
     }
 }
 
 
 int main()
 {
-    //SetConsoleOutputCP(65001);
-    //SetConsoleCP(65001);
-    setlocale(LC_ALL, "");
+    SetConsoleOutputCP(65001);
+    SetConsoleCP(65001);
+    setlocale(LC_ALL, ".UTF-8");
     
-    system("chcp 1251 > nul");
-    
-    printf_s("Приветствую!\n");
+    printf_s("Welcome!\n");
 
     char command;
 
     while (1) {
-        printf_s("Меню:\n");
-        printf_s("1) Вычислить хеш файла\n");
-        printf_s("2) Сравнить файлы\n");
-        printf_s("0) Выход\n");
-        printf_s("Выберите действие: ");
+        printf_s("\nMenu:\n");
+        printf_s("1) Calculate file hash\n");
+        printf_s("2) Compare files\n");
+        printf_s("0) Exit\n");
+        printf_s("Select action: ");
         scanf_s("%c", &command, 1);
         while (getchar() != '\n');
 
@@ -177,11 +180,11 @@ int main()
             comparison_menu();
         }
         else if (command == '0') {
-            printf_s("Выход из программы...");
+            printf_s("Exiting program...\n");
             return 0;
         }
         else {
-            printf_s("Введена неверная команда. Повторите ввод заново.");
+            printf_s("Invalid command. Please try again.\n");
         }
 
         printf_s("\n");
