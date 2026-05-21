@@ -50,18 +50,18 @@ char* get_hash(const char* filepath, char* hash_str) {
         return NULL;
     }
 
-    char* converted_path = convert_encoding(filepath, 65001, 1251);
+    /*char* converted_path = convert_encoding(filepath, 1251, 1251);
     if (!converted_path) {
         printf("Error: Failed to convert path\n");
         return NULL;
-    }
+    }*/
 
-    FILE* file = fopen(converted_path, "rb");
+    FILE* file = fopen(filepath, "rb");
     if (file == NULL) {
         printf("Error: Cannot open file \"%s\" (Make sure the file exists at the specified path)\n", filepath);
         return NULL;
     }
-    free(converted_path);
+    //free(converted_path);
 
 
     uint64_t hash = GOLDEN_RATIO;
@@ -156,9 +156,9 @@ void comparison_menu() {
 
 int main()
 {
-    SetConsoleOutputCP(65001);
-    SetConsoleCP(65001);
-    setlocale(LC_ALL, ".UTF-8");
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
+    setlocale(LC_ALL, "Russian");
     
     printf_s("Welcome!\n");
 
